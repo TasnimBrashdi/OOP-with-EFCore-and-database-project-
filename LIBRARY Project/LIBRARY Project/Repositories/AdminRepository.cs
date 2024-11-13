@@ -24,6 +24,10 @@ namespace LIBRARY_Project.Repositories
         {
             return _context.Admins.FirstOrDefault(a => a.AName == Name);
         }
+        public Admin GetByEmail(string email)
+        {
+            return _context.Admins.FirstOrDefault(a => a.Email == email);
+        }
 
         public Admin GetById(int ID)
         {
