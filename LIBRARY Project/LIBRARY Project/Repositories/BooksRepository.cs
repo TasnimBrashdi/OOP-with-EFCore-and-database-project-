@@ -1,6 +1,7 @@
 ﻿using LIBRARY_Project.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -50,7 +51,7 @@ namespace LIBRARY_Project.Repositories
          
         }
 
-        public void Delete(int BID)
+        public void DeleteById(int BID)
         {
             var Book = GetById(BID);
             if (Book != null)
@@ -59,5 +60,30 @@ namespace LIBRARY_Project.Repositories
                 _context.SaveChanges();
             }
         }
+
+        public float GetTotalPrice()
+        {
+            return _context.Books.Sum(book => book.Price);
+        }
+
+
+        public float getMaxPrice()
+        {
+            return _context.Books.Max(book => book.Price);  
+        }
+
+        public int getTotalBorrowedBooks()
+        {
+
+            return _context.Books.Sum(book => book.Copies);
+        }
+        public int getTotalBooksPerCategoryName(string name)
+        {
+
+            return _context.Books.Count(b => b.BName == name);
+
+        }
+
+
     }
 }
