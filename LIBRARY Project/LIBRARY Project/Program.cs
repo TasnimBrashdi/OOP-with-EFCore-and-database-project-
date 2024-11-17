@@ -1,5 +1,7 @@
 ﻿using LIBRARY_Project.Models;
 using LIBRARY_Project.Repositories;
+using static System.Reflection.Metadata.BlobBuilder;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LIBRARY_Project
 {
@@ -41,12 +43,12 @@ namespace LIBRARY_Project
                             break;
                         case "3":
 
-
+                            AddUser(userRepository);
 
                             break;
                         case "4":
 
-
+                            LoginUser(userRepository);
 
                             break;
                         case "5":
@@ -135,12 +137,13 @@ namespace LIBRARY_Project
                 Console.WriteLine("\n 5- Update Category");
                 Console.WriteLine("\n 6- Remove Category");
                 Console.WriteLine("\n ---------------SECTION VIEW DATA-------------");
-                Console.WriteLine("\n 7- Display All Books");
-                Console.WriteLine("\n 8- Display All categories");
-                Console.WriteLine("\n 9- Display All users");
-                Console.WriteLine("\n 10- Search Book");
-                Console.WriteLine("\n 11- Search Category");
-                Console.WriteLine("\n 12- log out");
+                Console.WriteLine("\n 7- Display All Books and Search Book");
+                Console.WriteLine("\n 8- Display All categories and Search Category");
+                //Complete from here 
+                Console.WriteLine("\n 9- Display All Borroed Books");
+                Console.WriteLine("\n 10- Display All users");
+         
+                Console.WriteLine("\n 11- log out");
 
                 var choice = Console.ReadLine();
 
@@ -182,14 +185,9 @@ namespace LIBRARY_Project
                         DisplayAllUsers(user);
                         break;
 
+ 
+              
                     case "10":
-                        SeachBooks(books);
-                        break;
-                    case "11":
-                        SearchCate(category);
-
-                        break;
-                    case "12":
                         Console.WriteLine("You have succeessfully logged out");
                         ExitFlag = true;
                         break;
@@ -334,11 +332,61 @@ namespace LIBRARY_Project
         static void DisplayAllBooks(BooksRepository repository)
         {
             var books = repository.GetAll();
+
+        
+            if (books == null || !books.Any())
+            {
+                Console.WriteLine("No books available.");
+                return;
+            }
             Console.WriteLine("\nBooks:");
             foreach (var b in books)
             {
                 Console.WriteLine($"Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
             }
+
+
+            Console.WriteLine("\nWould you like to search for a specific book? (yes/no)");
+            string searchResponse = Console.ReadLine()?.Trim().ToLower();
+
+            if (searchResponse == "yes")
+            {
+                Console.WriteLine("Enter the name of the book you want to search for:");
+                string bookName = Console.ReadLine()?.Trim();
+
+                if (string.IsNullOrEmpty(bookName))
+                {
+                    Console.WriteLine("Invalid input. Please provide a book name.");
+                    return;
+                }
+
+                var book = repository.GetByName(bookName);
+                if (book != null)
+                {
+                    Console.WriteLine("\nBook Details:");
+                    Console.WriteLine($"ID: {book.BId}");
+                    Console.WriteLine($"Name: {book.BName}");
+                    Console.WriteLine($"Author: {book.Author}");
+                    Console.WriteLine($"Copies Available: {book.Copies}");
+                    Console.WriteLine($"Price: {book.Price:C}");
+                    Console.WriteLine($"Category ID: {book.CategoryID}");
+                    Console.WriteLine($"Period: {book.Period}");
+                }
+                else
+                {
+                    Console.WriteLine("Book not found.");
+                }
+            }
+            else if (searchResponse == "no")
+            {
+                Console.WriteLine("No search performed. Returning to main menu.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter 'yes' or 'no'.");
+            }
+
+
         }
         static void DisplayAllCatego(CategoryRepository repository)
         {
@@ -349,6 +397,40 @@ namespace LIBRARY_Project
                 Console.WriteLine($"Category ID: {c.CId}Category Name: {c.CName}");
 
             }
+
+            Console.WriteLine("\nWould you like to search for a specific Category? (yes/no)");
+            string searchResponse = Console.ReadLine()?.Trim().ToLower();
+
+            if (searchResponse == "yes")
+            {
+                Console.Write("Enter Category Name You to search for: ");
+                string categoryName = Console.ReadLine();
+
+                var category = repository.GetByName(categoryName);
+                if (category != null)
+                {
+                    Console.WriteLine("\nCategory Details:");
+                    Console.WriteLine($"ID: {category.CId}");
+                    Console.WriteLine($"Name: {category.CName}");
+                    Console.WriteLine($"No Books: {category.NoBooks}");
+
+                }
+
+                else
+                {
+                    Console.WriteLine("Category not found.");
+                }
+            }
+            else if (searchResponse == "no")
+            {
+                Console.WriteLine("No search performed. Returning to main menu.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter 'yes' or 'no'.");
+            }
+            
+
         }
         static void DisplayAllUsers(UserRepository repository)
         {
@@ -361,48 +443,188 @@ namespace LIBRARY_Project
             }
         }
 
-        static void SeachBooks(BooksRepository repository)
-        {
-            Console.WriteLine("Enter Book Name");
-            string bookName = Console.ReadLine();
+       
 
-            var book = repository.GetByName(bookName);
-            if (book != null)
+       
+        static void AddUser(UserRepository repository)
+        {
+            Console.WriteLine("ENTER YOUR Name");
+            string name = Console.ReadLine();
+
+            Console.WriteLine("ENTER YOUR Gender (Male/Female)");
+            string genderInput = Console.ReadLine();
+
+       
+            if (!Enum.TryParse(typeof(User.GENDER), genderInput, true, out var genderEnum))
             {
-                Console.WriteLine("\nBook Details:");
-                Console.WriteLine($"ID: {book.BId}");
-                Console.WriteLine($"Name: {book.BName}");
-                Console.WriteLine($"Author: {book.Author}");
-                Console.WriteLine($"Copies Available: {book.Copies}");
-                Console.WriteLine($"Price: {book.Price}");
-                Console.WriteLine($"Category ID: {book.CategoryID}");
-                Console.WriteLine($"Period: {book.Period}");
+                Console.WriteLine("Invalid gender. Please enter 'Male' or 'Female'.");
+                return;
+            }
+
+            Console.WriteLine("Enter passcode");
+            string pass = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(pass))
+            {
+                Console.WriteLine("Passcode cannot be empty.");
+                return;
+            }
+
+        
+            var user = new User
+            {
+                UName = name,
+                Gender = (User.GENDER)genderEnum,
+                Passcode = pass
+            };
+
+            repository.iNSERT(user);
+        }
+
+        static void LoginUser(UserRepository repository)
+        {
+            Console.WriteLine("Enter your Name:");
+            string userName = Console.ReadLine();
+
+     
+            User user = repository.GetByName(userName);
+
+            if (user == null)
+            {
+                Console.WriteLine("Username not found.");
+                return;
+            }
+
+            Console.WriteLine("Enter your passcode:");
+            string passcode = Console.ReadLine();
+
+            if (user.Passcode == passcode)
+            {
+                Console.WriteLine($"Welcome back, {user.UName}!");
+            }
+            else
+            {
+                Console.WriteLine("Invalid passcode. Please try again.");
+            }
+        }
+
+        static void UserMenu(UserRepository repository, BooksRepository books, CategoryRepository category) {
+            bool ExitFlag = false;
+            do
+            {
+
+                Console.WriteLine("\n Enter the Number of operation you need :");
+     
+     
+                Console.WriteLine("\n 1- Display All Books and Search");
+                Console.WriteLine("\n 2- Display All categories and Search");
+                Console.WriteLine("\n 3- Borrow Books");
+                Console.WriteLine("\n 4- Return Books");
+                Console.WriteLine("\n 5- log out");
+
+                var choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+
+                        DisplayAllBooks(books);
+                        break;
+
+                    case "2":
+                        DisplayAllCatego(category);
+                        break;
+                    case "3":
+
+                 
+                        break;
+                    case "4":
+
+
+                        break;
+                    case "5":
+    
+                        Console.WriteLine("You have succeessfully logged out");
+                        ExitFlag = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Sorry your choice was wrong");
+                        break;
+
+
+
+                }
+
+                Console.WriteLine("press any key to continue");
+                string cont = Console.ReadLine();
+
+                Console.Clear();
+            } while (ExitFlag != true);
+
+
+
+
+        }
+
+        static void BorrowBooks(BooksRepository books,BorrowingRepository borrowing) {
+
+            var book = books.GetAll();
+
+
+            if (book == null || !book.Any())
+            {
+                Console.WriteLine("No books available.");
+                return;
+            }
+            Console.WriteLine("\nBooks:");
+            foreach (var b in book)
+            {
+                Console.WriteLine($"Book ID: {b.BId} Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
+            }
+
+
+            Console.WriteLine("Enter Book's Id you want to Borrow.");
+            int Id;
+            while (!int.TryParse(Console.ReadLine(), out Id) || Id <= 0)
+            {
+                Console.Write("Invalid input.");
+            }
+
+
+          
+            var b = books.GetById(Id);
+            if (b != null)
+            {
+                Console.WriteLine("\n :");
+                Console.WriteLine($"ID: {b.BId}");
+                Console.WriteLine($"Name: {b.BName}");
+  
+                Console.WriteLine($"Price: {b.Price}");
+
+                Console.WriteLine($"Period: {b.Period}");
+           
+
+
             }
             else
             {
                 Console.WriteLine("Book not found.");
             }
 
-        }
 
-        static void SearchCate(CategoryRepository repository) {
-            Console.Write("Enter Category Name: ");
-            string categoryName = Console.ReadLine();
 
-            var category = repository.GetByName(categoryName);
-            if (category != null)
-            {
-                Console.WriteLine("\nCategory Details:");
-                Console.WriteLine($"ID: {category.CId}");
-                Console.WriteLine($"Name: {category.CName}");
-              
-            }
-            else
-            {
-                Console.WriteLine("Category not found.");
-            }
+
 
         }
+
+
+
+
+
+
+
+
 
 
 
