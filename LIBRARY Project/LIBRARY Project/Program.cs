@@ -567,59 +567,102 @@ namespace LIBRARY_Project
 
         }
 
-        static void BorrowBooks(BooksRepository books,BorrowingRepository borrowing) {
+       
+        static void BorrowBooks(BooksRepository booksRepo, BorrowingRepository borrowingRepo, int userId)
+        {
 
-            var book = books.GetAll();
+
+            var bookss = booksRepo.GetAll();
 
 
-            if (book == null || !book.Any())
+            if (bookss == null || !bookss.Any())
             {
                 Console.WriteLine("No books available.");
                 return;
             }
             Console.WriteLine("\nBooks:");
-            foreach (var b in book)
+            foreach (var b in bookss)
             {
                 Console.WriteLine($"Book ID: {b.BId} Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
             }
 
-
-            Console.WriteLine("Enter Book's Id you want to Borrow.");
-            int Id;
-            while (!int.TryParse(Console.ReadLine(), out Id) || Id <= 0)
+            Console.WriteLine("Enter the ID of the book you want to borrow:");
+            if (!int.TryParse(Console.ReadLine(), out int bookId))
             {
-                Console.Write("Invalid input.");
+                Console.WriteLine("Invalid input. Please enter a numeric book ID.");
+                return;
             }
 
-
-          
-            var b = books.GetById(Id);
-            if (b != null)
+            if (!borrowingRepo.IsBookAvailable(bookId))
             {
-                Console.WriteLine("\n :");
-                Console.WriteLine($"ID: {b.BId}");
-                Console.WriteLine($"Name: {b.BName}");
-  
-                Console.WriteLine($"Price: {b.Price}");
-
-                Console.WriteLine($"Period: {b.Period}");
-           
-
-
-            }
-            else
-            {
-                Console.WriteLine("Book not found.");
+                Console.WriteLine("The book is not available for borrowing.");
+                return;
             }
 
+    
+            var book = booksRepo.GetById(bookId);
+            if (book == null)
+            {
+                Console.WriteLine("The book does not exist.");
+                return;
+            }
 
+            Console.WriteLine("Enter the return date (yyyy-MM-dd):");
+            if (!DateTime.TryParse(Console.ReadLine(), out DateTime returnDate))
+            {
+                Console.WriteLine("Invalid date format. Please try again.");
+                return;
+            }
 
+        
+            book.Copies -= 1;
+            booksRepo.UpdateByName(book.BName,book.Author,book.Copies);
 
+         
+            var borrowing = new Borrowing
+            {
+                BookId = bookId,
+                UserId = userId,
+                BorrowDate = DateTime.Now,
+                ReturnDate = returnDate,
+                IsReturned = false
+            };
+            borrowingRepo.Add(borrowing);
 
+            Console.WriteLine($"Book with ID {bookId} borrowed successfully. Please return by {returnDate:yyyy-MM-dd}.");
         }
 
 
+        static void ReturnBooks(BooksRepository booksRepo, BorrowingRepository borrowingRepo, int userId)
+        {
+            Console.WriteLine("Enter the ID of the book you want to return:");
+            if (!int.TryParse(Console.ReadLine(), out int bookId))
+            {
+                Console.WriteLine("Invalid input. Please enter a numeric book ID.");
+                return;
+            }
 
+            var borrowing = borrowingRepo.GetByUserId(userId).FirstOrDefault(b => b.BookId == bookId && !b.IsReturned);
+            if (borrowing == null)
+            {
+                Console.WriteLine("No borrowing record found for this book, or the book has already been returned.");
+                return;
+            }
+
+       
+            borrowingRepo.MarkAsReturned(borrowing.BookId, borrowing.UserId);
+
+          
+            var book = booksRepo.GetById(bookId);
+            if (book != null)
+            {
+                book.Copies += 1;
+                booksRepo.UpdateByName(book.BName,book.Author,book.Copies);
+          
+            }
+
+            Console.WriteLine($"Book with ID {bookId} has been successfully returned.");
+        }
 
 
 
