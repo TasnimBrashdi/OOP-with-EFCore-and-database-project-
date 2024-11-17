@@ -39,7 +39,7 @@ namespace LIBRARY_Project
 
                         case "2":
                             LogAdmin(adminRepository);
-                            AdminMenu(adminRepository, bookRepository,categoryRepository,userRepository);
+                            AdminMenu(adminRepository, bookRepository,categoryRepository,userRepository, borrowingRepository);
                             break;
                         case "3":
 
@@ -123,7 +123,7 @@ namespace LIBRARY_Project
 
         }
 
-        static void AdminMenu(AdminRepository repository, BooksRepository books, CategoryRepository category, UserRepository user) {
+        static void AdminMenu(AdminRepository repository, BooksRepository books, CategoryRepository category, UserRepository user,BorrowingRepository borrowing) {
             bool ExitFlag = false;
             do
             {
@@ -136,14 +136,17 @@ namespace LIBRARY_Project
                 Console.WriteLine("\n 4- Add New Category");
                 Console.WriteLine("\n 5- Update Category");
                 Console.WriteLine("\n 6- Remove Category");
-                Console.WriteLine("\n ---------------SECTION VIEW DATA-------------");
-                Console.WriteLine("\n 7- Display All Books and Search Book");
-                Console.WriteLine("\n 8- Display All categories and Search Category");
-                //Complete from here 
-                Console.WriteLine("\n 9- Display All Borroed Books");
-                Console.WriteLine("\n 10- Display All users");
+                Console.WriteLine("\n 7- Add New User");
+                Console.WriteLine("\n 8- Update Book");
+                Console.WriteLine("\n 9- Remove User");
+
+                Console.WriteLine("\n ---------------SECTION VIEW DATA---------------");
+                Console.WriteLine("\n 10- Display All Books and Search Book");
+                Console.WriteLine("\n 11- Display All Categories and Search Category");
+                Console.WriteLine("\n 12- Display All Borrowed Books");
+                Console.WriteLine("\n 13- Display All Users");
          
-                Console.WriteLine("\n 11- log out");
+                Console.WriteLine("\n 14- Log out");
 
                 var choice = Console.ReadLine();
 
@@ -176,18 +179,30 @@ namespace LIBRARY_Project
                         RemoveCategory(category);
                         break;
                     case "7":
-                        DisplayAllBooks(books);
+                        AddUser(user);
                         break;
                     case "8":
-                        DisplayAllCatego(category);
+
                         break;
                     case "9":
+                        RemoveUser(user);
+                        break;
+                    case "10":
+                        DisplayAllBooks(books);
+                        break;
+                    case "11":
+                        DisplayAllCatego(category);
+                        break;
+                        case "12":
+                            DisplayAllBorrowed(borrowing);
+                        break;  
+                    case "13":
                         DisplayAllUsers(user);
                         break;
 
  
               
-                    case "10":
+                    case "14":
                         Console.WriteLine("You have succeessfully logged out");
                         ExitFlag = true;
                         break;
@@ -223,10 +238,18 @@ namespace LIBRARY_Project
             Console.Write("Enter Author: ");
             var author = Console.ReadLine();
             Console.Write("Enter Category ID: ");
-            int cate;
-            while (!int.TryParse(Console.ReadLine(), out cate) || cate <= 0)
+            int categoryId;
+            while (!int.TryParse(Console.ReadLine(), out categoryId) || categoryId <= 0)
             {
-                Console.Write("Invalid input.");
+                Console.Write("Invalid input. Please enter a positive number for Category ID: ");
+            }
+
+          
+            var categ = category.GetById(categoryId);
+            if (categ == null)
+            {
+                Console.WriteLine("Category not found. Please add the category first.");
+                return;
             }
             Console.Write("Enter Copies: ");
             int copies;
@@ -236,12 +259,20 @@ namespace LIBRARY_Project
             }
 
             Console.Write("Enter Period: ");
-            var Period = Console.ReadLine();
+            int period;
+            while (!int.TryParse(Console.ReadLine(), out period) || period <= 0)
+            {
+                Console.Write("Invalid input.");
+            }
             Console.Write("Enter Price: ");
             if (float.TryParse(Console.ReadLine(), out var price))
             {
-                var book = new Books { BName = BookName, Author = author, Copies = copies, Price = price,CategoryID= cate };
+                var book = new Books { BName = BookName, Author = author, Copies = copies, Price = price,Period=period ,CategoryID= categoryId };
                 repository.iNSERT(book);
+                category.UpdateByName(BookName);
+
+                categ.NoBooks += 1;
+                category.Update(categoryId);
                 Console.WriteLine("Books added successfully!");
             }
             else
@@ -301,21 +332,90 @@ namespace LIBRARY_Project
             {
                 Console.Write("Invalid input. Enter a valid book ID: ");
             }
+            var book = books.GetById(bookId);
+            if (book == null)
+            {
+                Console.WriteLine("Book not found. No action taken.");
+                return;
+            }
 
             books.DeleteById(bookId);
-            Console.WriteLine("Book removed successfully, if it existed.");
+            Console.WriteLine("Book removed successfully.");
+
+            //var cate = category.GetById(book.CategoryID); 
+            //if (cate != null)
+            //{
+            //    cate.NoBooks = Math.Max(0, cate.NoBooks - 1); 
+            //    category.Update(cate.CId);
+            //    Console.WriteLine($"Category '{cate.CName}' updated. Remaining books: {cate.NoBooks}");
+            //}
         }
 
-        static void UpdateCategory(CategoryRepository category)
+        static void UpdateCategory(CategoryRepository category) 
         {
             Console.Write("\nEnter Category Name: ");
             string name = Console.ReadLine();
 
 
-            category.UpdateByName(name);
-            Console.WriteLine("Books category successfully!");
+            var cate = category.GetByName(name);
+
+            if (cate == null)
+            {
+                Console.WriteLine("Category not found.");
+                return;
+            }
+
+            Console.WriteLine($"Updating Info for category: {cate.CName}");
+
+            Console.Write("Enter new category name: ");
+            string newName = Console.ReadLine();
+
+    
+            if (!string.IsNullOrEmpty(newName))
+            {
+                cate.CName = newName;
+            }
+
+            category.UpdateByName(cate.CName);
+            Console.WriteLine("Category updated successfully!");
 
         }
+
+        static void UpdateUser(UserRepository userRepository)
+        {
+            Console.Write("\nEnter User Name to Update: ");
+            string name = Console.ReadLine();
+
+    
+            var user = userRepository.GetByName(name);
+
+            if (user == null)
+            {
+                Console.WriteLine("User not found.");
+                return;
+            }
+
+            Console.WriteLine($"Updating Info for: {user.UName}");
+
+            Console.Write("Enter new name: ");
+            string newName = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newName))
+            {
+                user.UName = newName;
+            }
+
+            Console.Write("Enter new passcode: ");
+            string newPasscode = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newPasscode))
+            {
+                user.Passcode = newPasscode;
+            }
+
+        
+            userRepository.UpdateByName(user.UName);
+            Console.WriteLine("User details updated successfully!");
+        }
+
         static void RemoveCategory(CategoryRepository category)
         {
             Console.Write("\nEnter Category ID: ");
@@ -327,6 +427,19 @@ namespace LIBRARY_Project
 
             category.DeleteById(Id);
             Console.WriteLine("category removed successfully, if it existed.");
+        }
+        static void RemoveUser(UserRepository user)
+        {
+            Console.Write("\nEnter user ID: ");
+            int Id;
+            while (!int.TryParse(Console.ReadLine(), out Id) || Id <= 0)
+            {
+                Console.Write("Invalid input. Enter a valid  ID: ");
+            }
+
+            user.DeleteById(Id);
+            Console.WriteLine("user removed successfully, if it existed.");
+
         }
 
         static void DisplayAllBooks(BooksRepository repository)
@@ -443,6 +556,19 @@ namespace LIBRARY_Project
             }
         }
 
+        static void DisplayAllBorrowed(BorrowingRepository borrowing)
+        {
+            var borrowings = borrowing.GetAll();
+            Console.WriteLine("\nBorrowed Books:");
+            foreach (var b in borrowings)
+            {
+                Console.WriteLine($"User Borrowed: {b.UserId} Book ID: {b.BId} Borrowed Date: {b.BorrowDate} R  Return Date: {b.ReturnDate} Is Returned ? {b.IsReturned}");
+
+            }
+
+
+        }
+
        
 
        
@@ -481,7 +607,7 @@ namespace LIBRARY_Project
             repository.iNSERT(user);
         }
 
-        static void LoginUser(UserRepository repository)
+        static int? LoginUser(UserRepository repository)
         {
             Console.WriteLine("Enter your Name:");
             string userName = Console.ReadLine();
@@ -492,7 +618,7 @@ namespace LIBRARY_Project
             if (user == null)
             {
                 Console.WriteLine("Username not found.");
-                return;
+                return null;
             }
 
             Console.WriteLine("Enter your passcode:");
@@ -501,14 +627,16 @@ namespace LIBRARY_Project
             if (user.Passcode == passcode)
             {
                 Console.WriteLine($"Welcome back, {user.UName}!");
+                return user.UID;
             }
             else
             {
                 Console.WriteLine("Invalid passcode. Please try again.");
+                return null;
             }
         }
 
-        static void UserMenu(UserRepository repository, BooksRepository books, CategoryRepository category) {
+        static void UserMenu(UserRepository repository, BooksRepository books, CategoryRepository category,BorrowingRepository borrowing, int userId) {
             bool ExitFlag = false;
             do
             {
@@ -520,7 +648,8 @@ namespace LIBRARY_Project
                 Console.WriteLine("\n 2- Display All categories and Search");
                 Console.WriteLine("\n 3- Borrow Books");
                 Console.WriteLine("\n 4- Return Books");
-                Console.WriteLine("\n 5- log out");
+                Console.WriteLine("\n 5- Over due Borrowings");
+                Console.WriteLine("\n 6- log out");
 
                 var choice = Console.ReadLine();
 
@@ -535,14 +664,18 @@ namespace LIBRARY_Project
                         DisplayAllCatego(category);
                         break;
                     case "3":
+                        BorrowBooks(books,borrowing,userId);
 
-                 
+
                         break;
                     case "4":
-
+                        ReturnBooks(books, borrowing,userId);
 
                         break;
                     case "5":
+                        GetOverdueBorrowings(borrowing,userId);
+                        break;
+                    case "6":
     
                         Console.WriteLine("You have succeessfully logged out");
                         ExitFlag = true;
@@ -664,6 +797,28 @@ namespace LIBRARY_Project
             Console.WriteLine($"Book with ID {bookId} has been successfully returned.");
         }
 
+        static void GetOverdueBorrowings(BorrowingRepository borrowing,int userId)
+        {
+
+            Console.WriteLine("Fetching overdue borrowings...");
+
+       
+            var overdueBorrowings = borrowing.GetOverdueBorrowings().Where(b => b.UserId == userId)
+                                                 .ToList();
+
+            if (!overdueBorrowings.Any())
+            {
+                Console.WriteLine("You have no overdue borrowings.");
+                return;
+            }
+
+            Console.WriteLine("\nOverdue Borrowings:");
+            foreach (var b in overdueBorrowings)
+            {
+                Console.WriteLine($"- Book ID: {b.BookId}, Due Date: {b.ReturnDate:yyyy-MM-dd}, Borrowed On: {b.BorrowDate:yyyy-MM-dd}");
+            }
+
+        }
 
 
 
