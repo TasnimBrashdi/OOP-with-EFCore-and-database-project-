@@ -48,6 +48,17 @@ namespace LIBRARY_Project.Repositories
 
         }
 
+        public void Update( int id)
+        {
+            var existingCategory = GetById(id);
+            if (existingCategory != null)
+            {
+                _context.Categories.Update(existingCategory);
+                _context.SaveChanges();
+            }
+        }
+
+
         public void DeleteById(int UID)
         {
             var category = GetById(UID);
