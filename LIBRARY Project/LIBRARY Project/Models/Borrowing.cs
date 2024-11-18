@@ -20,7 +20,7 @@ namespace LIBRARY_Project.Models
         public virtual Books BId {  get; set; }
         public DateTime BorrowDate {  get; set; }
         public DateTime ReturnDate { get; set; }
-        public DateTime ActualDate { get; set; }    
-
+        public DateTime ActualDate { get; set; }
+        public bool IsReturned { get; set; }
     }
 }

@@ -111,6 +111,9 @@ namespace LIBRARY_Project
                 {
                     var admin = new Admin { AName = name, Email = email, Password = pass };
                     repository.iNSERT(admin);
+                    Console.WriteLine("Admin added successfully!");
+
+              
 
                 }
 
@@ -665,6 +668,9 @@ namespace LIBRARY_Project
             };
 
             repository.iNSERT(user);
+            Console.WriteLine("User addded");
+   
+
         }
 
         static int? LoginUser(UserRepository repository)
