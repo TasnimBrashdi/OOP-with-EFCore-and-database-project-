@@ -15,6 +15,7 @@ namespace LIBRARY_Project
             var bookRepository = new BooksRepository(dbContext);
             var adminRepository = new AdminRepository(dbContext);
             var userRepository = new UserRepository(dbContext);
+    
             var categoryRepository = new CategoryRepository(dbContext);
             var borrowingRepository = new BorrowingRepository(dbContext);
 
@@ -24,6 +25,7 @@ namespace LIBRARY_Project
             {
                 do
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.WriteLine("\n   - - - - Welcome to Library - - - -  ");
                     Console.WriteLine("\n Choose: \n 1- New Admin  \n 2- Log in Admin \n 3- New User \n 4- Log in User \n 5- Log out ");
 
@@ -48,8 +50,18 @@ namespace LIBRARY_Project
                             break;
                         case "4":
 
-                            LoginUser(userRepository);
+                   
 
+                            int? userId = LoginUser(userRepository);
+
+                            if (userId.HasValue)  
+                            {
+                                UserMenu(userRepository, bookRepository, categoryRepository, borrowingRepository, userId.Value);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Login failed. Please try again.");
+                            }
                             break;
                         case "5":
                             ExitFlag = true;
@@ -467,6 +479,8 @@ namespace LIBRARY_Project
             Console.WriteLine("\nBooks:");
             foreach (var b in books)
             {
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+
                 Console.WriteLine($"Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
             }
 
@@ -757,14 +771,9 @@ namespace LIBRARY_Project
                 return;
             }
 
-            Console.WriteLine("Enter the return date (yyyy-MM-dd):");
-            if (!DateTime.TryParse(Console.ReadLine(), out DateTime returnDate))
-            {
-                Console.WriteLine("Invalid date format. Please try again.");
-                return;
-            }
+       
+            DateTime returnDate = DateTime.Now.AddDays(book.Period);
 
-        
             book.Copies -= 1;
             booksRepo.UpdateByName(book.BName,book.Author,book.Copies);
 
