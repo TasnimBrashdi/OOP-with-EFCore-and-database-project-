@@ -137,7 +137,7 @@ namespace LIBRARY_Project
                 Console.WriteLine("\n 5- Update Category");
                 Console.WriteLine("\n 6- Remove Category");
                 Console.WriteLine("\n 7- Add New User");
-                Console.WriteLine("\n 8- Update Book");
+                Console.WriteLine("\n 8- Update User");
                 Console.WriteLine("\n 9- Remove User");
 
                 Console.WriteLine("\n ---------------SECTION VIEW DATA---------------");
@@ -182,7 +182,7 @@ namespace LIBRARY_Project
                         AddUser(user);
                         break;
                     case "8":
-
+                        UpdateUser(user);
                         break;
                     case "9":
                         RemoveUser(user);
@@ -272,7 +272,7 @@ namespace LIBRARY_Project
                 category.UpdateByName(BookName);
 
                 categ.NoBooks += 1;
-                category.Update(categoryId);
+                category.Update(categ);
                 Console.WriteLine("Books added successfully!");
             }
             else
@@ -342,13 +342,25 @@ namespace LIBRARY_Project
             books.DeleteById(bookId);
             Console.WriteLine("Book removed successfully.");
 
-            //var cate = category.GetById(book.CategoryID); 
-            //if (cate != null)
-            //{
-            //    cate.NoBooks = Math.Max(0, cate.NoBooks - 1); 
-            //    category.Update(cate.CId);
-            //    Console.WriteLine($"Category '{cate.CName}' updated. Remaining books: {cate.NoBooks}");
-            //}
+            if (book.CategoryID == null || book.CategoryID <= 0)
+            {
+                Console.WriteLine("Book does not have a valid category ID. No category updates will be made.");
+                return;
+            }
+
+            int categoryId = book.CategoryID.Value;
+
+            var cate = category.GetById(categoryId);
+            if (cate != null)
+            {
+                cate.NoBooks = Math.Max(0, cate.NoBooks - 1);
+                category.Update(cate); 
+                Console.WriteLine($"Category '{cate.CName}' updated. Remaining books: {cate.NoBooks}");
+            }
+            else
+            {
+                Console.WriteLine("No category found for this book. No category updates will be made.");
+            }
         }
 
         static void UpdateCategory(CategoryRepository category) 
@@ -380,7 +392,7 @@ namespace LIBRARY_Project
             Console.WriteLine("Category updated successfully!");
 
         }
-
+  
         static void UpdateUser(UserRepository userRepository)
         {
             Console.Write("\nEnter User Name to Update: ");
@@ -703,7 +715,12 @@ namespace LIBRARY_Project
        
         static void BorrowBooks(BooksRepository booksRepo, BorrowingRepository borrowingRepo, int userId)
         {
-
+            var userBorrowings = borrowingRepo.GetByUserId(userId);
+            if (userBorrowings.Any(b => !b.IsReturned))
+            {
+                Console.WriteLine("You already have an active borrowed book. Please return it before borrowing another.");
+                return;
+            }
 
             var bookss = booksRepo.GetAll();
 
@@ -713,7 +730,7 @@ namespace LIBRARY_Project
                 Console.WriteLine("No books available.");
                 return;
             }
-            Console.WriteLine("\nBooks:");
+            Console.WriteLine("\n------------ Books List ------------");
             foreach (var b in bookss)
             {
                 Console.WriteLine($"Book ID: {b.BId} Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
