@@ -249,6 +249,14 @@ namespace LIBRARY_Project
             var BookName = Console.ReadLine();
             Console.Write("Enter Author: ");
             var author = Console.ReadLine();
+            var Cate = category.GetAll();
+
+            Console.WriteLine("\nCategories:");
+            foreach (var c in Cate)
+            {
+                Console.WriteLine($"Category ID: {c.CId}   |  Category Name: {c.CName}");
+
+            }
             Console.Write("Enter Category ID: ");
             int categoryId;
             while (!int.TryParse(Console.ReadLine(), out categoryId) || categoryId <= 0)
@@ -493,12 +501,21 @@ namespace LIBRARY_Project
                 Console.WriteLine("No books available.");
                 return;
             }
-            Console.WriteLine("\n------------ Books List ------------");
+            Console.WriteLine("\n                                               Books List              ");
+
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"{"Book ID",-10} | {"Book Name",-25} | {"Author",-20} | {"Copies",-8} | {"Price",-10} | {"Period",-10} | {"Category",-10}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+
+     
             foreach (var b in books)
-            { 
-                Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.WriteLine($"Book ID: {b.BId,-5} | Book Name: {b.BName,-15} | Author's Name: {b.Author,-10} | Copies: {b.Copies,-5} | Price: {b.Price,-10:C} | Period: {b.Period,-10} | Category: {b.CategoryID,-10}");
+            {
+                Console.WriteLine($"{b.BId,-10} | {b.BName,-25} | {b.Author,-20} | {b.Copies,-8} | {b.Price,-10:C} | {b.Period,-10} | {b.CategoryID,-10}");
             }
+
+      
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+
 
 
 
@@ -550,7 +567,7 @@ namespace LIBRARY_Project
             Console.WriteLine("\nCategories:");
             foreach (var c in Cate)
             {
-                Console.WriteLine($"Category ID: {c.CId}Category Name: {c.CName}");
+                Console.WriteLine($"Category ID: {c.CId}   |  Category Name: {c.CName}");
 
             }
 
@@ -565,7 +582,7 @@ namespace LIBRARY_Project
                 var category = repository.GetByName(categoryName);
                 if (category != null)
                 {
-                    Console.WriteLine("\nCategory Details:");
+                    Console.WriteLine("\nCategory Details: ");
                     Console.WriteLine($"ID: {category.CId}");
                     Console.WriteLine($"Name: {category.CName}");
                     Console.WriteLine($"No Books: {category.NoBooks}");
@@ -761,11 +778,21 @@ namespace LIBRARY_Project
                 Console.WriteLine("No books available.");
                 return;
             }
-            Console.WriteLine("\n------------ Books List ------------");
+            Console.WriteLine("\n                                               Books List              ");
+
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"{"Book ID",-10} | {"Book Name",-25} | {"Author",-20} | {"Copies",-8} | {"Price",-10} | {"Period",-10} | {"Category",-10}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+
+           
             foreach (var b in bookss)
             {
-                Console.WriteLine($"Book ID: {b.BId,-5} | Book Name: {b.BName,-25} | Author's Name: {b.Author,-20} | Copies: {b.Copies,-5} | Price: {b.Price,-10:C} | Period: {b.Period,-10} | Category: {b.CategoryID,-10}");
+                Console.WriteLine($"{b.BId,-10} | {b.BName,-25} | {b.Author,-20} | {b.Copies,-8} | {b.Price,-10:C} | {b.Period,-10} | {b.CategoryID,-10}");
             }
+
+
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+
 
 
             Console.WriteLine("Enter the ID of the book you want to borrow:");
