@@ -25,7 +25,7 @@ namespace LIBRARY_Project
             {
                 do
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine("\n   - - - - Welcome to Library - - - -  ");
                     Console.WriteLine("\n Choose: \n 1- New Admin  \n 2- Log in Admin \n 3- New User \n 4- Log in User \n 5- Log out ");
 
@@ -808,14 +808,16 @@ namespace LIBRARY_Project
                 return;
             }
 
-       
-            borrowingRepo.MarkAsReturned(borrowing.BookId, borrowing.UserId);
+            borrowing.IsReturned = true;
+            borrowing.ActualDate = DateTime.Now;
 
-          
+            borrowingRepo.Update(borrowing);
+            borrowingRepo.MarkAsReturned(borrowing.BookId,userId);
             var book = booksRepo.GetById(bookId);
             if (book != null)
             {
                 book.Copies += 1;
+
                 booksRepo.UpdateByName(book.BName,book.Author,book.Copies);
           
             }
