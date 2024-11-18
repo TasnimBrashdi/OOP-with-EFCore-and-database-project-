@@ -39,13 +39,12 @@ namespace LIBRARY_Project.Repositories
             _context.SaveChanges();
         }
 
-        public void UpdateByName(string name, string author, int copies)
+        public void UpdateByName(string name)
         {
             var book = GetByName(name);
             if (book != null)
             {
-                book.Author = author;
-                book.Copies = copies;
+       
                 _context.Books.Update(book);
                 _context.SaveChanges();
             }
@@ -54,9 +53,24 @@ namespace LIBRARY_Project.Repositories
                 Console.WriteLine("Book not found.");
             }
         }
+        public void UpdateBook(Books book)
+        {
+            var Book = GetById(book.BId);
+            if (Book != null)
+            {
+                Book.BName = book.BName;
+                Book.Author = book.Author;
+                Book.Copies = book.Copies;
+                _context.Books.Update(Book);
+                _context.SaveChanges();
+            }
+            else
+            {
+                Console.WriteLine("Book not found.");
+            }
 
-
-        public void DeleteById(int BID)
+        }
+            public void DeleteById(int BID)
         {
             var Book = GetById(BID);
             if (Book != null)

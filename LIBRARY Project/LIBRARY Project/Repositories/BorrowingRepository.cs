@@ -50,9 +50,9 @@ namespace LIBRARY_Project.Repositories
             var book = _context.Books.Find(bookId);
             return book != null && book.Copies > 0;
         }
-        public void MarkAsReturned(int ID1, int ID2)
+        public void MarkAsReturned(int ID1, int user)
         {
-            var borrowing = GetById(ID1, ID2);
+            var borrowing = GetById(ID1, user);
             if (borrowing != null && !borrowing.IsReturned)
             {
                 borrowing.IsReturned = true;

@@ -83,7 +83,7 @@ namespace LIBRARY_Project
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR" + ex.Message);
+                Console.WriteLine("ERROR " + ex.Message);
             }
         }
 
@@ -316,23 +316,40 @@ namespace LIBRARY_Project
 
         static void UpdateBooks(BooksRepository repository, CategoryRepository category)
         {
+
+            Console.Write("\nEnter Book ID to Update: ");
+            int bookId;
+            while (!int.TryParse(Console.ReadLine(), out bookId) || bookId <= 0)
+            {
+                Console.Write("Invalid input. Enter a valid book ID: ");
+            }
+            var book = repository.GetById(bookId);
+            if (book == null)
+            {
+                Console.WriteLine("Book not found. No action taken.");
+                return;
+            }
+            else 
+            { 
             Console.Write("\nEnter Book's Name: ");
             string name = Console.ReadLine();
             Console.Write("Enter Author: ");
             string author = Console.ReadLine();
-            Console.Write("Enter Copies: ");
+            Console.Write("Enter number to add Copies: ");
             int copies;
             while (!int.TryParse(Console.ReadLine(), out copies) || copies <= 0)
             {
                 Console.Write("Invalid input.");
             }
-
-            repository.UpdateByName(name, author, copies);
+                book.BName = name;
+                book.Author = author;
+                book.Copies += copies;   
+               repository.UpdateBook(book);
             Console.WriteLine("Books Upadte successfully!");
 
 
 
-
+                }
 
         }
 
@@ -467,7 +484,7 @@ namespace LIBRARY_Project
         }
 
         static void DisplayAllBooks(BooksRepository repository)
-        {
+        { 
             var books = repository.GetAll();
 
         
@@ -476,13 +493,13 @@ namespace LIBRARY_Project
                 Console.WriteLine("No books available.");
                 return;
             }
-            Console.WriteLine("\nBooks:");
+            Console.WriteLine("\n------------ Books List ------------");
             foreach (var b in books)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-
-                Console.WriteLine($"Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
+            { 
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine($"Book ID: {b.BId,-5} | Book Name: {b.BName,-15} | Author's Name: {b.Author,-10} | Copies: {b.Copies,-5} | Price: {b.Price,-10:C} | Period: {b.Period,-10} | Category: {b.CategoryID,-10}");
             }
+
 
 
             Console.WriteLine("\nWould you like to search for a specific book? (yes/no)");
@@ -747,8 +764,9 @@ namespace LIBRARY_Project
             Console.WriteLine("\n------------ Books List ------------");
             foreach (var b in bookss)
             {
-                Console.WriteLine($"Book ID: {b.BId} Book Name: {b.BName} -Author's Name: {b.Author}  -Copies: {b.Copies} - Pirce: {b.Price} -Period:  {b.Period} -Category: {b.CategoryID}");
+                Console.WriteLine($"Book ID: {b.BId,-5} | Book Name: {b.BName,-25} | Author's Name: {b.Author,-20} | Copies: {b.Copies,-5} | Price: {b.Price,-10:C} | Period: {b.Period,-10} | Category: {b.CategoryID,-10}");
             }
+
 
             Console.WriteLine("Enter the ID of the book you want to borrow:");
             if (!int.TryParse(Console.ReadLine(), out int bookId))
@@ -756,7 +774,7 @@ namespace LIBRARY_Project
                 Console.WriteLine("Invalid input. Please enter a numeric book ID.");
                 return;
             }
-
+            
             if (!borrowingRepo.IsBookAvailable(bookId))
             {
                 Console.WriteLine("The book is not available for borrowing.");
@@ -770,14 +788,18 @@ namespace LIBRARY_Project
                 Console.WriteLine("The book does not exist.");
                 return;
             }
+            if (book.Copies <= 0)
+            {
+                Console.WriteLine("No copies available to borrow.");
+                return;
+            }
 
-       
             DateTime returnDate = DateTime.Now.AddDays(book.Period);
 
             book.Copies -= 1;
-            booksRepo.UpdateByName(book.BName,book.Author,book.Copies);
+            booksRepo.GetByName(book.BName);
 
-         
+
             var borrowing = new Borrowing
             {
                 BookId = bookId,
@@ -786,6 +808,8 @@ namespace LIBRARY_Project
                 ReturnDate = returnDate,
                 IsReturned = false
             };
+
+
             borrowingRepo.Add(borrowing);
 
             Console.WriteLine($"Book with ID {bookId} borrowed successfully. Please return by {returnDate:yyyy-MM-dd}.");
@@ -818,7 +842,7 @@ namespace LIBRARY_Project
             {
                 book.Copies += 1;
 
-                booksRepo.UpdateByName(book.BName,book.Author,book.Copies);
+                booksRepo.GetByName(book.BName);
           
             }
 
